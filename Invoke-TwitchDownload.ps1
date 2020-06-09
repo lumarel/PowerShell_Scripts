@@ -187,7 +187,7 @@ foreach ($UserFollow in $UserFollows) {
     $AccountContentsCount = 1
     foreach ($AccountContent in $AccountContents) {
         Write-Progress -Id 1 -Activity "Downloading clips/videos of $($AccountContent.broadcaster_name)" -PercentComplete (($AccountContentsCount / $AccountContents.Count) * 100) -Status "Clip/Video $AccountContentsCount of $($AccountContents.Count)"
-        $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
+        $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.created_at.Hour.ToString('00') + ':' + $AccountContent.created_at.Minute.ToString('00') + ':' + $AccountContent.created_at.Second.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
         $FullPath = $FilePath + '\' + $FileNameNormalized
         $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath

@@ -1,3 +1,5 @@
+#requires -version 6.0
+
 <#
 .SYNOPSIS
     Script to download clips or videos from Twitch by channels (name or id) or subscribed channels by a user
@@ -35,7 +37,7 @@
 
 .PARAMETER YoutubeDLexe
     Specifies the path to the youtube-dl.exe file
-    By default it is configured to find the executable in the same folder or in the user/system PATH variable
+    By default it is configured to find the executable in the user/system PATH variable
 
 .PARAMETER ClientID
     Passed to authorization endpoints to identify your application. You cannot change your application's client id.

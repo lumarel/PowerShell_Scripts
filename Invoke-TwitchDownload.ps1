@@ -71,6 +71,7 @@
 
 .NOTES
     The youtube-dl.exe has to be in the system or user PATH variable, or at least in the same folder to work!
+    Having problems with downloading? Update the youtube-dl.exe first, there might already be a fix for that.
 #>
 
 param(

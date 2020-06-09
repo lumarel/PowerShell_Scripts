@@ -33,6 +33,10 @@
 .PARAMETER FilePath
     Specifies the output-directory to which the files will be downloaded
 
+.PARAMETER YoutubeDLexe
+    Specifies the path to the youtube-dl.exe file
+    By default it is configured to find the executable in the same folder or in the user/system PATH variable
+
 .PARAMETER ClientID
     Passed to authorization endpoints to identify your application. You cannot change your application's client id.
     Please create a application on the Twitch dev page and fill it in here
@@ -41,10 +45,6 @@
     Private token which gives the access to the API
     Specifically this is a app access token, which can be generated like mentioned in the docs:
     https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-client-credentials-flow
-
-.PARAMETER YoutubeDLexe
-    Specifies the path to the youtube-dl.exe file
-    By default it is configured to find the executable in the same folder or in the user/system PATH variable
 
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
@@ -109,6 +109,7 @@ param(
     [Parameter(ParameterSetName='subscriptions_config_vod')]
     [switch]$VODDownload,
     [string]$FilePath = $env:USERPROFILE + '\Downloads',
+    [string]$YoutubeDLexe = 'youtube-dl.exe',
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
@@ -118,8 +119,7 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
-    [string]$OAuthToken,
-    [string]$YoutubeDLexe = 'youtube-dl.exe'
+    [string]$OAuthToken
 )
 if(-not($ClientID -and $OAuthToken)) {
     . $ConfigFile

@@ -51,6 +51,9 @@
 
 .EXAMPLE
     .\Invoke-TwitchClipDownload.ps1 -broadcaster_id '123456789' -ClientID 'uo6dggojyb8d6soh92zknwmi5ej1q2' -OAuthToken 'prau3ol6mg5glgek8m89ec2s9q5i3i'
+
+.NOTES
+    The youtube-dl.exe has to be in the system or user PATH variable, or at least in the same folder to work!
 #>
 
 param(

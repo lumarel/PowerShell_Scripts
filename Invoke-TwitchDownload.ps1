@@ -42,17 +42,21 @@
     Specifically this is a app access token, which can be generated like mentioned in the docs:
     https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-client-credentials-flow
 
-.EXAMPLE
-    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
+.PARAMETER YoutubeDLexe
+    Specifies the path to the youtube-dl.exe file
+    By default it is configured to find the executable in the same folder or in the user/system PATH variable
 
 .EXAMPLE
-    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -VODDownload
+    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
 
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch'
 
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -VODDownload
+
+.EXAMPLE
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -YoutubeDLexe 'C:\Program Files\youtube-dl\youtube-dl.exe'
 
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription
@@ -70,8 +74,7 @@
     .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -ClientID 'uo6dggojyb8d6soh92zknwmi5ej1q2' -OAuthToken 'prau3ol6mg5glgek8m89ec2s9q5i3i'
 
 .NOTES
-    The youtube-dl.exe has to be in the system or user PATH variable, or at least in the same folder to work!
-    Having problems with downloading? Update the youtube-dl.exe first, there might already be a fix for that.
+    Having problems with downloading? Update the youtube-dl.exe first, there might already be a fix for that!
 #>
 
 param(
@@ -115,7 +118,8 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
-    [string]$OAuthToken
+    [string]$OAuthToken,
+    [string]$YoutubeDLexe = 'youtube-dl.exe'
 )
 if(-not($ClientID -and $OAuthToken)) {
     . $ConfigFile
@@ -184,7 +188,7 @@ foreach ($UserFollow in $UserFollows) {
         $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
         $FullPath = $FilePath + '\' + $FileNameNormalized
-        $AccountContent.url | youtube-dl.exe --batch-file - --output $FullPath
+        $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath
 
         $AccountContentsCount++
     }

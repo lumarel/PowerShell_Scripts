@@ -46,10 +46,19 @@
     .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
 
 .EXAMPLE
+    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -VODDownload
+
+.EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch'
 
 .EXAMPLE
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -VODDownload
+
+.EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription
+
+.EXAMPLE
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -VODDownload
     
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -SubscriberOnly
@@ -88,12 +97,12 @@ param(
     [Parameter(ParameterSetName='subscriptions_config')]
     [Parameter(ParameterSetName='subscriptions_config_vod')]
     [string]$ConfigFile = '.\.tokens.ps1',
-    [Parameter(Mandatory=$true,ParameterSetName='name')]
-    [Parameter(Mandatory=$true,ParameterSetName='name_config')]
-    [Parameter(Mandatory=$true,ParameterSetName='id')]
-    [Parameter(Mandatory=$true,ParameterSetName='id_config')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
+    [Parameter(ParameterSetName='name')]
+    [Parameter(ParameterSetName='name_config')]
+    [Parameter(ParameterSetName='id')]
+    [Parameter(ParameterSetName='id_config')]
+    [Parameter(ParameterSetName='subscriptions_vod')]
+    [Parameter(ParameterSetName='subscriptions_config_vod')]
     [switch]$VODDownload,
     [string]$FilePath = $env:USERPROFILE + '\Downloads',
     [Parameter(Mandatory=$true,ParameterSetName='name')]

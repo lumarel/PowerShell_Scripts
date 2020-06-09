@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Script to download clips from Twitch by channels (name or id) or subscribed channels by a user
+    Script to download clips or videos from Twitch by channels (name or id) or subscribed channels by a user
 
 .DESCRIPTION
-    As Twitch changed its way how the frontend looks it isn't that simple anymore to parse the clips, as well as download them.
-    This script should solve this problem as it fetches the clips and downloads them via youtube-dl.exe
+    As Twitch changed its way how the frontend looks it isn't that simple anymore to parse the clips/videos, as well as download them.
+    This script should solve this problem as it fetches the clips/videos and downloads them via youtube-dl.exe
 
 .PARAMETER broadcaster_name
     This is the descriptive name which has been chosen by the user
@@ -20,7 +20,15 @@
 
 .PARAMETER ConfigFile
     Configurationfile for ClientID and OAuthToken (as well as other parameters but intended for these two)
-    Default filepath is the same directory called as .tokens.ps1
+    Default filepath is the same directory called as .tokens.ps1 in this format:
+    SOF
+    $ClientID = 'uo6dggojyb8d6soh92zknwmi5ej1q2'
+    $OAuthToken = 'prau3ol6mg5glgek8m89ec2s9q5i3i'
+    EOF
+
+.PARAMETER VODDownload
+    This switch switches to video/VOD download
+    Attention, this might take a long time, as these videos are massively larger than clips!
 
 .PARAMETER FilePath
     Specifies the output-directory to which the files will be downloaded
@@ -35,22 +43,22 @@
     https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#oauth-client-credentials-flow
 
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_id '123456789'
+    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
 
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_name 'Twitch'
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch'
 
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_name 'Twitch' -Subscription
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription
     
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_name 'Twitch' -Subscription -SubscriberOnly
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -SubscriberOnly
 
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_name 'Twitch' -Subscription -FilePath ($env:USERPROFILE + '\Desktop')
+    .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -FilePath ($env:USERPROFILE + '\Desktop')
 
 .EXAMPLE
-    .\Invoke-TwitchClipDownload.ps1 -broadcaster_id '123456789' -ClientID 'uo6dggojyb8d6soh92zknwmi5ej1q2' -OAuthToken 'prau3ol6mg5glgek8m89ec2s9q5i3i'
+    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -ClientID 'uo6dggojyb8d6soh92zknwmi5ej1q2' -OAuthToken 'prau3ol6mg5glgek8m89ec2s9q5i3i'
 
 .NOTES
     The youtube-dl.exe has to be in the system or user PATH variable, or at least in the same folder to work!
@@ -61,12 +69,16 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='name_config')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
     [Alias('UserName')][string]$broadcaster_name,
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='id_config')]
     [string]$broadcaster_id,
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
     [switch]$Subscription,
     [Parameter(ParameterSetName='subscriptions')]
     [Parameter(ParameterSetName='subscriptions_config')]
@@ -74,15 +86,25 @@ param(
     [Parameter(ParameterSetName='name_config')]
     [Parameter(ParameterSetName='id_config')]
     [Parameter(ParameterSetName='subscriptions_config')]
+    [Parameter(ParameterSetName='subscriptions_config_vod')]
     [string]$ConfigFile = '.\.tokens.ps1',
+    [Parameter(Mandatory=$true,ParameterSetName='name')]
+    [Parameter(Mandatory=$true,ParameterSetName='name_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='id')]
+    [Parameter(Mandatory=$true,ParameterSetName='id_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
+    [switch]$VODDownload,
     [string]$FilePath = $env:USERPROFILE + '\Downloads',
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [string]$ClientID,
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [string]$OAuthToken
 )
 if(-not($ClientID -and $OAuthToken)) {
@@ -124,32 +146,37 @@ foreach ($UserFollow in $UserFollows) {
         Write-Progress -Activity "Subscription of $($UserFollow.to_name)" -PercentComplete (($UserFollowsCount / $UserFollows.Count) * 100) -Status "Subscription $UserFollowsCount of $($UserFollows.Count)"
     }
 
-    $AccountClips = @()
-    $AccountClipsPagination = ''
-    $AccountClipsPaginationCount = 1
+    $AccountContents = @()
+    $AccountContentsPagination = ''
+    $AccountContentsPaginationCount = 1
     do {
-        Write-Verbose -Message "Invoking request to get clip $($AccountClipsPaginationCount * 100 - 99) to $($AccountClipsPaginationCount * 100)"
-        $jsonAccountClips = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountClipsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        if ($VODDownload) {
+            Write-Verbose -Message "Invoking request to get video $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
+            $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        } else {
+            Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
+            $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        }
 
-        $AccountClips += $jsonAccountClips.Content | ConvertFrom-Json | Select-Object -ExpandProperty data
-        $AccountClipsPagination = ($jsonAccountClips | ConvertFrom-Json | Select-Object -ExpandProperty pagination).cursor
+        $AccountContents += $jsonAccountContents.Content | ConvertFrom-Json | Select-Object -ExpandProperty data
+        $AccountContentsPagination = ($jsonAccountContents | ConvertFrom-Json | Select-Object -ExpandProperty pagination).cursor
 
-        $AccountClipsPaginationCount++
-    } while ($null -ne $AccountClipsPagination)
+        $AccountContentsPaginationCount++
+    } while ($null -ne $AccountContentsPagination)
 
     if ($SubscriberOnly) {
-        $AccountClips = $AccountClips | Where-Object creator_id -eq $broadcaster_id
+        $AccountContents = $AccountContents | Where-Object creator_id -eq $broadcaster_id
     }
 
-    $AccountClipsCount = 1
-    foreach ($AccountClip in $AccountClips) {
-        Write-Progress -Id 1 -Activity "Downloading Clips of $($AccountClip.broadcaster_name)" -PercentComplete (($AccountClipsCount / $AccountClips.Count) * 100) -Status "Clip $AccountClipsCount of $($AccountClips.Count)"
-        $FileName = $AccountClip.created_at.Year.ToString('0000') + '-' + $AccountClip.created_at.Month.ToString('00') + '-' + $AccountClip.created_at.Day.ToString('00') + '_' + $AccountClip.title + '_' + $AccountClip.broadcaster_name + '_' + $AccountClip.creator_name + '.%(ext)s'
+    $AccountContentsCount = 1
+    foreach ($AccountContent in $AccountContents) {
+        Write-Progress -Id 1 -Activity "Downloading clips/videos of $($AccountContent.broadcaster_name)" -PercentComplete (($AccountContentsCount / $AccountContents.Count) * 100) -Status "Clip/Video $AccountContentsCount of $($AccountContents.Count)"
+        $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
         $FullPath = $FilePath + '\' + $FileNameNormalized
-        $AccountClip.url | youtube-dl.exe --batch-file - --output $FullPath
+        $AccountContent.url | youtube-dl.exe --batch-file - --output $FullPath
 
-        $AccountClipsCount++
+        $AccountContentsCount++
     }
 
     $UserFollowsCount++

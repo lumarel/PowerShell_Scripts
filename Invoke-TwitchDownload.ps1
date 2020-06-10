@@ -134,7 +134,9 @@ if (-not (Get-Item $FilePath -ErrorAction SilentlyContinue)) {
 
 if ($broadcaster_name) {
     Write-Verbose -Message 'Invoking request to get broadcaster_id'
-    $jsonUserName = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users?login=$broadcaster_name" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+    do {
+        $jsonUserName = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users?login=$broadcaster_name" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+    } until ($jsonUserName.StatusCode -eq '200')
     $broadcaster_id = ($jsonUserName.Content | ConvertFrom-Json | Select-Object -ExpandProperty data).id
 }
 
@@ -145,7 +147,9 @@ if ($Subscription) {
     $UserFollowsPaginationCount = 1
     do {
         Write-Verbose -Message "Invoking request to get channels followed by the broadcaster $($UserFollowsPaginationCount * 100 - 99) to $($UserFollowsPaginationCount * 100)"
-        $jsonUserFollows = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users/follows?from_id=$broadcaster_id&first=100&after=$UserFollowsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        do {
+            $jsonUserFollows = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users/follows?from_id=$broadcaster_id&first=100&after=$UserFollowsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        } until ($jsonUserFollows.StatusCode -eq '200')
         $UserFollows += $jsonUserFollows.Content | ConvertFrom-Json | Select-Object -ExpandProperty data
         $UserFollowsPagination = ($jsonUserFollows | ConvertFrom-Json | Select-Object -ExpandProperty pagination).cursor
 
@@ -168,10 +172,14 @@ foreach ($UserFollow in $UserFollows) {
     do {
         if ($VODDownload) {
             Write-Verbose -Message "Invoking request to get video $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
-            $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            do {
+                $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            } until ($LASTEXITCODE -eq '0')
         } else {
             Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
-            $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            do {
+                $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            } until ($jsonAccountContents.StatusCode -eq '200')
         }
 
         $AccountContents += $jsonAccountContents.Content | ConvertFrom-Json | Select-Object -ExpandProperty data
@@ -187,7 +195,7 @@ foreach ($UserFollow in $UserFollows) {
     $AccountContentsCount = 1
     foreach ($AccountContent in $AccountContents) {
         Write-Progress -Id 1 -Activity "Downloading clips/videos of $($AccountContent.broadcaster_name)" -PercentComplete (($AccountContentsCount / $AccountContents.Count) * 100) -Status "Clip/Video $AccountContentsCount of $($AccountContents.Count)"
-        $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.created_at.Hour.ToString('00') + ':' + $AccountContent.created_at.Minute.ToString('00') + ':' + $AccountContent.created_at.Second.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
+        $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.created_at.Hour.ToString('00') + '-' + $AccountContent.created_at.Minute.ToString('00') + '-' + $AccountContent.created_at.Second.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
         $FullPath = $FilePath + '\' + $FileNameNormalized
         $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath

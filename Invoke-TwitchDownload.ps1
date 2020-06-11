@@ -82,25 +82,33 @@
 param(
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='name_config')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn_config')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
     [Alias('UserName')][string]$broadcaster_name,
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='id_config')]
     [string]$broadcaster_id,
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi_config')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn_config')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_config_vod')]
     [switch]$Subscription,
-    [Parameter(ParameterSetName='subscriptions')]
-    [Parameter(ParameterSetName='subscriptions_config')]
-    [switch]$SubscriberOnly,
+    [Parameter(ParameterSetName='subscriptions_wi')]
+    [Parameter(ParameterSetName='subscriptions_wi_config')]
+    [Alias('SubscriberOnly')][switch]$SubscriberOnlyWithID,
+    [Parameter(ParameterSetName='subscriptions_wn')]
+    [Parameter(ParameterSetName='subscriptions_wn_config')]
+    [switch]$SubscriberOnlyWithName,
     [Parameter(ParameterSetName='name_config')]
     [Parameter(ParameterSetName='id_config')]
-    [Parameter(ParameterSetName='subscriptions_config')]
+    [Parameter(ParameterSetName='subscriptions_wi_config')]
+    [Parameter(ParameterSetName='subscriptions_wn_config')]
     [Parameter(ParameterSetName='subscriptions_config_vod')]
     [string]$ConfigFile = '.\.tokens.ps1',
     [Parameter(ParameterSetName='name')]
@@ -114,12 +122,14 @@ param(
     [string]$YoutubeDLexe = 'youtube-dl.exe',
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [string]$ClientID,
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
-    [Parameter(Mandatory=$true,ParameterSetName='subscriptions')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi')]
+    [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wn')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_vod')]
     [string]$OAuthToken
 )
@@ -188,8 +198,10 @@ foreach ($UserFollow in $UserFollows) {
         $AccountContentsPaginationCount++
     } while ($null -ne $AccountContentsPagination)
 
-    if ($SubscriberOnly) {
+    if ($SubscriberOnlyWithID) {
         $AccountContents = $AccountContents | Where-Object creator_id -eq $broadcaster_id
+    } elseif ($SubscriberOnlyWithName) {
+        $AccountContents = $AccountContents | Where-Object creator_name -eq $broadcaster_name
     }
 
     $AccountContentsCount = 1

@@ -177,7 +177,7 @@ if ($Subscription) {
 $UserFollowsCount = 1
 foreach ($UserFollow in $UserFollows) {
     if ($Subscription) {
-        Write-Progress -Activity "Subscription of $($UserFollow.to_name)" -PercentComplete (($UserFollowsCount / $UserFollows.Count) * 100) -Status "Subscription $UserFollowsCount of $($UserFollows.Count)"
+        Write-Progress -Activity "Follow of $($UserFollow.to_name)" -PercentComplete (($UserFollowsCount / $UserFollows.Count) * 100) -Status "Follow $UserFollowsCount of $($UserFollows.Count)"
     }
 
     $AccountContents = @()
@@ -190,7 +190,7 @@ foreach ($UserFollow in $UserFollows) {
             do {
                 $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
                 Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
-            } until ($LASTEXITCODE -eq '0')
+            } until ($jsonAccountContents.StatusCode -eq '200')
         } else {
             Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
             do {
@@ -225,5 +225,6 @@ foreach ($UserFollow in $UserFollows) {
         $AccountContentsCount++
     }
 
+    Write-Progress -Id 1 -Completed
     $UserFollowsCount++
 }

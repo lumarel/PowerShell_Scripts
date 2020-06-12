@@ -146,7 +146,12 @@ if ($broadcaster_name) {
     Write-Verbose -Message 'Invoking request to get broadcaster_id'
     $jsonUserName = ''
     do {
-        $jsonUserName = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users?login=$broadcaster_name" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        try {
+            $jsonUserName = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users?login=$broadcaster_name" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+        }
+        catch {
+            Write-Verbose -Message 'An Error occured while requesting something from the API'
+        }
         Write-Verbose -Message "Webrequest exited with $($jsonUserName.StatusCode)"
     } until ($jsonUserName.StatusCode -eq '200')
     $broadcaster_id = ($jsonUserName.Content | ConvertFrom-Json | Select-Object -ExpandProperty data).id
@@ -161,7 +166,12 @@ if ($Subscription) {
         Write-Verbose -Message "Invoking request to get channels followed by the broadcaster $($UserFollowsPaginationCount * 100 - 99) to $($UserFollowsPaginationCount * 100)"
         $jsonUserFollows = ''
         do {
-            $jsonUserFollows = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users/follows?from_id=$broadcaster_id&first=100&after=$UserFollowsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            try {
+                $jsonUserFollows = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users/follows?from_id=$broadcaster_id&first=100&after=$UserFollowsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            }
+            catch {
+                Write-Verbose -Message 'An Error occured while requesting something from the API'
+            }
             Write-Verbose -Message "Webrequest exited with $($jsonUserFollows.StatusCode)"
         } until ($jsonUserFollows.StatusCode -eq '200')
         $UserFollows += $jsonUserFollows.Content | ConvertFrom-Json | Select-Object -ExpandProperty data
@@ -188,13 +198,23 @@ foreach ($UserFollow in $UserFollows) {
         if ($VODDownload) {
             Write-Verbose -Message "Invoking request to get video $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
             do {
-                $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+                try {
+                    $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+                }
+                catch {
+                    Write-Verbose -Message 'An Error occured while requesting something from the API'
+                }
                 Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
             } until ($jsonAccountContents.StatusCode -eq '200')
         } else {
             Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
             do {
-                $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+                try {
+                    $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+                }
+                catch {
+                    Write-Verbose -Message 'An Error occured while requesting something from the API'
+                }
                 Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
             } until ($jsonAccountContents.StatusCode -eq '200')
         }
@@ -228,3 +248,5 @@ foreach ($UserFollow in $UserFollows) {
     Write-Progress -Id 1 -Completed
     $UserFollowsCount++
 }
+
+Write-Progress -Completed

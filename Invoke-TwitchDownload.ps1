@@ -255,8 +255,8 @@ foreach ($UserFollow in $UserFollows) {
         $AccountContentsCount++
     }
 
-    Write-Progress -Id 1 -Completed
+    Write-Progress -Id 1  -Activity "Downloading clips/videos of $($AccountContent.broadcaster_name)" -Completed
     $UserFollowsCount++
 }
 
-Write-Progress -Completed
+Write-Progress -Activity "Follow of $($UserFollow.to_name)" -Completed

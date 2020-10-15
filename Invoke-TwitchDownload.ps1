@@ -39,6 +39,10 @@
     Specifies the path to the youtube-dl.exe file
     By default it is configured to find the executable in the user/system PATH variable
 
+.PARAMETER DownloadTrials
+    Maximum Trials for every Download
+    By default it is configured with the value 42
+
 .PARAMETER ClientID
     Passed to authorization endpoints to identify your application. You cannot change your application's client id.
     Please create a application on the Twitch dev page and fill it in here

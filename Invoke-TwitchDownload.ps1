@@ -237,10 +237,12 @@ foreach ($UserFollow in $UserFollows) {
         $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.created_at.Hour.ToString('00') + '#' + $AccountContent.created_at.Minute.ToString('00') + '#' + $AccountContent.created_at.Second.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
         $FullPath = $FilePath + '\' + $FileNameNormalized
+        $DownloadTrials = 42
         do {
-        $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath --quiet --abort-on-error
-        Write-Verbose -Message "Download exited with $LASTEXITCODE (0=Successful|1=Failure)"
-        } until ($LASTEXITCODE -eq 0)
+            $DownloadTrials--
+            $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath --quiet --abort-on-error
+            Write-Verbose -Message "Download exited with $LASTEXITCODE (0=Successful|1=Failure) $DownloadTrials Trials left"
+        } until (($LASTEXITCODE -eq 0) -or ($DownloadTrials -le 0))
 
         $AccountContentsCount++
     }

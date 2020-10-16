@@ -246,9 +246,9 @@ foreach ($UserFollow in $UserFollows) {
         do {
             $CurrentDownloadTrials--
             $AccountContent.url | & $YoutubeDLexe --batch-file - --output $FullPath --quiet --abort-on-error
-            Write-Verbose -Message "Download exited with $LASTEXITCODE (0=Successful|1=Failure) $DownloadTrials Trials left"
-        } until (($LASTEXITCODE -eq 0) -or ($DownloadTrials -le 0))
-        if ($DownloadTrials -le 0) {
+            Write-Verbose -Message "Download exited with $LASTEXITCODE (0=Successful|1=Failure) $CurrentDownloadTrials Trials left"
+        } until (($LASTEXITCODE -eq 0) -or ($CurrentDownloadTrials -le 0))
+        if ($CurrentDownloadTrials -le 0) {
             Write-Verbose "The download of $($AccountContent.url) wasn't successful, please try it manually"
         }
 

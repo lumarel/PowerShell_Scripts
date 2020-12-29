@@ -34,7 +34,7 @@ if (-not $Legacy) {
         $DiskInfo = -split $_
         $DiskNumber = $DiskInfo[1]
         $DiskStatus = $DiskInfo[2]
-        
+
         if ($DiskStatus -ne 'Online') {
             Write-Host "Error for Disk $DiskNumber"
             $AllDisksStatus = $true
@@ -49,4 +49,4 @@ if (-not $Legacy) {
         Write-Host 'No Disk is on Error'
         Invoke-Webrequest -Uri $GoodURI
     }
-    }
+}

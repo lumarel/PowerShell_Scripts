@@ -17,7 +17,10 @@
 .PARAMETER Subscription
     With this switch the broadcaster_name will act as user, and all clips by any followed channel will be downloaded
 
-.PARAMETER SubscriberOnly
+.PARAMETER SubscriberOnlyWithID
+    Is an addition to Subscription to only download clips made by the user broadcaster_id
+
+.PARAMETER SubscriberOnlyWithName
     Is an addition to Subscription to only download clips made by the user broadcaster_name
 
 .PARAMETER ConfigFile
@@ -41,6 +44,10 @@
 
 .PARAMETER DownloadTrials
     Maximum Trials for every Download
+    By default it is configured with the value 42
+
+.PARAMETER APITrials
+    Maximum Trials for every Pagination fetch
     By default it is configured with the value 42
 
 .PARAMETER ClientID
@@ -125,6 +132,7 @@ param(
     [string]$FilePath = $env:USERPROFILE + '\Downloads',
     [string]$YoutubeDLexe = 'youtube-dl.exe',
     [int]$DownloadTrials = 42,
+    [int]$APITrials = 42,
     [Parameter(Mandatory=$true,ParameterSetName='name')]
     [Parameter(Mandatory=$true,ParameterSetName='id')]
     [Parameter(Mandatory=$true,ParameterSetName='subscriptions_wi')]
@@ -200,28 +208,26 @@ foreach ($UserFollow in $UserFollows) {
     $AccountContentsPaginationCount = 1
     do {
         $jsonAccountContents = ''
+        $CurrentAPITrials = $APITrials
         if ($VODDownload) {
             Write-Verbose -Message "Invoking request to get video $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
-            do {
-                try {
-                    $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/videos?user_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
-                }
-                catch {
-                    Write-Verbose -Message 'An Error occured while requesting something from the API'
-                }
-                Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
-            } until ($jsonAccountContents.StatusCode -eq '200')
+            $AccountContentURI = 'https://api.twitch.tv/helix/videos?user_id=' + $UserFollow.to_id + '&first=100&after=' + $AccountContentsPagination
         } else {
             Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
-            do {
-                try {
-                    $jsonAccountContents = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/clips?broadcaster_id=$($UserFollow.to_id)&first=100&after=$AccountContentsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
-                }
-                catch {
-                    Write-Verbose -Message 'An Error occured while requesting something from the API'
-                }
-                Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
-            } until ($jsonAccountContents.StatusCode -eq '200')
+            $AccountContentURI = 'https://api.twitch.tv/helix/clips?broadcaster_id=' + $UserFollow.to_id + '&first=100&after=' + $AccountContentsPagination
+        }
+        do {
+            $CurrentAPITrials--
+            try {
+                $jsonAccountContents = Invoke-WebRequest -Uri $AccountContentURI -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
+            }
+            catch {
+                Write-Verbose -Message 'An Error occured while requesting something from the API'
+            }
+            Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
+        } until (($jsonAccountContents.StatusCode -eq '200') -or ($CurrentAPITrials -le 0))
+        if ($CurrentAPITrials -le 0) {
+            Write-Verbose "The fetch of $($UserFollow.to_name) was unsuccessful, only approximately $($AccountContentsPaginationCount * 100) videos or clips got parsed"
         }
 
         $AccountContents += $jsonAccountContents.Content | ConvertFrom-Json | Select-Object -ExpandProperty data

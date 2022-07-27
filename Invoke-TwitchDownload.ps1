@@ -218,6 +218,10 @@ foreach ($UserFollow in $UserFollows) {
         }
         do {
             $CurrentAPITrials--
+            if ($CurrentAPITrials -le 5) {
+                Write-Verbose "There are only $CurrentAPITrials left, sleeping for 10 seconds to try to mitigate a rate limit"
+                Start-Sleep -Seconds 10
+            }
             try {
                 $jsonAccountContents = Invoke-WebRequest -Uri $AccountContentURI -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
             }

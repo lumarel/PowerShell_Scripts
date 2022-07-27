@@ -224,7 +224,7 @@ foreach ($UserFollow in $UserFollows) {
             catch {
                 Write-Verbose -Message 'An Error occured while requesting something from the API'
             }
-            Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode)"
+            Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode) $CurrentAPITrials Trials left"
         } until (($jsonAccountContents.StatusCode -eq '200') -or ($CurrentAPITrials -le 0))
         if ($CurrentAPITrials -le 0) {
             Write-Verbose "The fetch of $($UserFollow.to_name) was unsuccessful, only approximately $($AccountContentsPaginationCount * 100) videos or clips got parsed"

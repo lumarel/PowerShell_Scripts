@@ -37,10 +37,12 @@
 
 .PARAMETER FilePath
     Specifies the output-directory to which the files will be downloaded
+    By default it is the Downloads directory
 
 .PARAMETER YoutubeDLexe
     Specifies the path to the youtube-dl.exe file
     By default it is configured to find the executable in the user/system PATH variable
+    On Linux download and use yt-dlp
 
 .PARAMETER DownloadTrials
     Maximum Trials for every Download
@@ -129,7 +131,7 @@ param(
     [Parameter(ParameterSetName='subscriptions_vod')]
     [Parameter(ParameterSetName='subscriptions_config_vod')]
     [switch]$VODDownload,
-    [string]$FilePath = $env:USERPROFILE + '\Downloads',
+    [string]$FilePath = (Join-Path -Path $env:USERPROFILE -ChildPath 'Downloads'),
     [string]$YoutubeDLexe = 'youtube-dl.exe',
     [int]$DownloadTrials = 42,
     [int]$APITrials = 42,
@@ -251,7 +253,7 @@ foreach ($UserFollow in $UserFollows) {
         Write-Progress -Id 1 -Activity "Downloading clips/videos of $($AccountContent.broadcaster_name)" -PercentComplete (($AccountContentsCount / $AccountContents.Count) * 100) -Status "Clip/Video $AccountContentsCount of $($AccountContents.Count)"
         $FileName = $AccountContent.created_at.Year.ToString('0000') + '-' + $AccountContent.created_at.Month.ToString('00') + '-' + $AccountContent.created_at.Day.ToString('00') + '_' + $AccountContent.created_at.Hour.ToString('00') + '#' + $AccountContent.created_at.Minute.ToString('00') + '#' + $AccountContent.created_at.Second.ToString('00') + '_' + $AccountContent.title + '_' + $AccountContent.broadcaster_name + '_' + $AccountContent.creator_name + '.%(ext)s'
         $FileNameNormalized = $FileName -replace ' ','_' -replace '\\','' -replace '/',''
-        $FullPath = $FilePath + '\' + $FileNameNormalized
+        $FullPath = Join-Path -Path $FilePath -ChildPath $FileNameNormalized
         $CurrentDownloadTrials = $DownloadTrials
         do {
             $CurrentDownloadTrials--

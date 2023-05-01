@@ -78,7 +78,7 @@
 
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -VODDownload
-    
+
 .EXAMPLE
     .\Invoke-TwitchDownload.ps1 -broadcaster_name 'Twitch' -Subscription -SubscriberOnly
 
@@ -165,7 +165,7 @@ if ($broadcaster_name) {
             $jsonUserName = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users?login=$broadcaster_name" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
         }
         catch {
-            Write-Verbose -Message 'An Error occured while requesting something from the API'
+            Write-Verbose -Message 'An Error occurred while requesting something from the API'
         }
         Write-Verbose -Message "Webrequest exited with $($jsonUserName.StatusCode)"
     } until ($jsonUserName.StatusCode -eq '200')
@@ -185,7 +185,7 @@ if ($Subscription) {
                 $jsonUserFollows = Invoke-WebRequest -Uri "https://api.twitch.tv/helix/users/follows?from_id=$broadcaster_id&first=100&after=$UserFollowsPagination" -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
             }
             catch {
-                Write-Verbose -Message 'An Error occured while requesting something from the API'
+                Write-Verbose -Message 'An Error occurred while requesting something from the API'
             }
             Write-Verbose -Message "Webrequest exited with $($jsonUserFollows.StatusCode)"
         } until ($jsonUserFollows.StatusCode -eq '200')
@@ -228,7 +228,7 @@ foreach ($UserFollow in $UserFollows) {
                 $jsonAccountContents = Invoke-WebRequest -Uri $AccountContentURI -Headers @{'Client-ID' = $ClientID; 'Authorization' = $OAuthToken}
             }
             catch {
-                Write-Verbose -Message 'An Error occured while requesting something from the API'
+                Write-Verbose -Message 'An Error occurred while requesting something from the API'
             }
             Write-Verbose -Message "Webrequest exited with $($jsonAccountContents.StatusCode) $CurrentAPITrials Trials left"
         } until (($jsonAccountContents.StatusCode -eq '200') -or ($CurrentAPITrials -le 0))

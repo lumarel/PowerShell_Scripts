@@ -108,7 +108,7 @@ param(
     [Parameter(ParameterSetName='name')]
     [Parameter(ParameterSetName='id')]
     [switch]$VODDownload,
-    [string]$FilePath = (Join-Path -Path $env:USERPROFILE -ChildPath 'Downloads'),
+    [string]$FilePath = (Join-Path -Path ~ -ChildPath 'Downloads'),
     [string]$YoutubeDLexe = 'yt-dlp',
     [string]$TwitchCLIexe = 'twitch',
     [int]$DownloadTrials = 42,

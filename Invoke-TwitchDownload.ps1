@@ -39,7 +39,9 @@
 .PARAMETER YoutubeDLexe
     Specifies the path to the youtube-dl executable
     By default it is configured to find the executable in the user/system PATH variable
-    On Linux the easiest way is to download and use yt-dlp
+    It's defaulting to yt-dlp now, so if needed switch it to youtube-dl
+    You can get both projects here: https://github.com/yt-dlp/yt-dlp/releases
+    and here: https://github.com/ytdl-org/youtube-dl/releases
 
 .PARAMETER TwitchCLIexe
     Specifies the path to the twitch-cli executable.
@@ -106,7 +108,7 @@ param(
     [Parameter(ParameterSetName='id')]
     [switch]$VODDownload,
     [string]$FilePath = (Join-Path -Path $env:USERPROFILE -ChildPath 'Downloads'),
-    [string]$YoutubeDLexe = 'youtube-dl',
+    [string]$YoutubeDLexe = 'yt-dlp',
     [string]$TwitchCLIexe = 'twitch',
     [int]$DownloadTrials = 42,
     [int]$APITrials = 42

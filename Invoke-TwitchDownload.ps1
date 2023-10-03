@@ -200,9 +200,11 @@ foreach ($UserFollow in $UserFollows) {
         if ($VODDownload) {
             Write-Verbose -Message "Invoking request to get video $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
             $AccountContentTemplate = '/videos'
+            $AccountContentIDType = 'user_id'
         } else {
             Write-Verbose -Message "Invoking request to get clip $($AccountContentsPaginationCount * 100 - 99) to $($AccountContentsPaginationCount * 100)"
             $AccountContentTemplate = '/clips'
+            $AccountContentIDType = 'broadcaster_id'
         }
         do {
             $CurrentAPITrials--
@@ -211,7 +213,7 @@ foreach ($UserFollow in $UserFollows) {
                 Start-Sleep -Seconds 10
             }
             try {
-                $jsonAccountContents = Invoke-TwitchCLI -TwitchCLIexe $TwitchCLIexe -Command 'get' -Template $AccountContentTemplate -Query @("user_id=$($UserFollow.broadcaster_id)",'first=100',"after=$AccountContentsPagination")
+                $jsonAccountContents = Invoke-TwitchCLI -TwitchCLIexe $TwitchCLIexe -Command 'get' -Template $AccountContentTemplate -Query @("$AccountContentIDType=$($UserFollow.broadcaster_id)",'first=100',"after=$AccountContentsPagination")
             }
             catch {
                 Write-Verbose -Message 'An Error occurred while requesting something from the API'

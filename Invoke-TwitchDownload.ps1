@@ -117,9 +117,9 @@ param(
 function Invoke-TwitchCLI {
     param(
         [Parameter(Mandatory)][string]$TwitchCLIexe,
-        [Parameter(Mandatory)][string]$Command,
         [Parameter(Mandatory)][ValidateSet('get','post','put','patch','delete')]
-        [string]$Template,
+        [string]$Command,
+        [Parameter(Mandatory)][string]$Template,
         [string[]][Parameter()]$Query
     )
 

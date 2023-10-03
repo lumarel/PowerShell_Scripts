@@ -123,15 +123,14 @@ function Invoke-TwitchCLI {
         [string[]][Parameter()]$Query
     )
 
+    $ExecString = $TwitchCLIexe + ' api ' + $Command + ' ' + $Template
     $QueryString = ''
     if ($Query.Count -ge 1) {
         $QueryString = '-q ' + ($Query -join ' -q ')
-
-        $response = & $TwitchCLIexe api $Command $Template $QueryString
-    } else {
-        $response = & $TwitchCLIexe api $Command $Template
+        $ExecString =  $ExecString + ' ' + $QueryString   
     }
-
+    
+    $response = Invoke-Expression $ExecString
     $jsonResponse = $response | ConvertFrom-Json
     if ($jsonResponse.status -eq '404') {
         throw 'Endpoint not available'

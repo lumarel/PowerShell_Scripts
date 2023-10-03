@@ -91,21 +91,29 @@ param(
     [Parameter(Mandatory,ParameterSetName='subscriptions')]
     [Parameter(Mandatory,ParameterSetName='subscriptions_id')]
     [Parameter(Mandatory,ParameterSetName='subscriptions_self')]
+    [Parameter(Mandatory,ParameterSetName='subscriptions_vod')]
+    [Parameter(Mandatory,ParameterSetName='subscriptions_id_vod')]
+    [Parameter(Mandatory,ParameterSetName='subscriptions_self_vod')]
     [switch]$Subscription,
     [Parameter(Mandatory,ParameterSetName='name')]
+    [Parameter(Mandatory,ParameterSetName='name_vod')]
     [Alias('UserName', 'broadcaster_name')][string]$Identity,
     [Parameter(Mandatory,ParameterSetName='id')]
+    [Parameter(Mandatory,ParameterSetName='id_vod')]
     [Alias('broadcaster_id')][string]$IdentityID,
     [Parameter(ParameterSetName='subscriptions')]
+    [Parameter(ParameterSetName='subscriptions_vod')]
     [string]$CreatorIdentity,
     [Parameter(ParameterSetName='subscriptions_id')]
+    [Parameter(ParameterSetName='subscriptions_id_vod')]
     [string]$CreatorIdentityID,
     [Parameter(ParameterSetName='subscriptions_self')]
+    [Parameter(ParameterSetName='subscriptions_self_vod')]
     [switch]$SelfDownload,
-    [Parameter(ParameterSetName='subscriptions')]
-    [Parameter(ParameterSetName='subscriptions_id')]
-    [Parameter(ParameterSetName='name')]
-    [Parameter(ParameterSetName='id')]
+    [Parameter(ParameterSetName='subscriptions_vod')]
+    [Parameter(ParameterSetName='subscriptions_id_vod')]
+    [Parameter(ParameterSetName='name_vod')]
+    [Parameter(ParameterSetName='id_vod')]
     [switch]$VODDownload,
     [string]$FilePath = (Join-Path -Path $env:USERPROFILE -ChildPath 'Downloads'),
     [string]$YoutubeDLexe = 'yt-dlp',

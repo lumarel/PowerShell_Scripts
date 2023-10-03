@@ -126,13 +126,16 @@ function Invoke-TwitchCLI {
     $QueryString = ''
     if ($Query.Count -ge 1) {
         $QueryString = '-q ' + ($Query -join ' -q ')
+
+        $response = & $TwitchCLIexe api $Command $Template $QueryString
+    } else {
+        $response = & $TwitchCLIexe api $Command $Template
     }
 
-    $response = & $TwitchCLIexe api $Command $Template $QueryString
     $jsonResponse = $response | ConvertFrom-Json
     if ($jsonResponse.status -eq '404') {
         throw 'Endpoint not available'
-    } elseif ($null -ne $jsonResponse.data) {
+    } elseif (-not $jsonResponse.data) {
         throw 'Data missing'
     }
 

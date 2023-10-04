@@ -84,6 +84,10 @@
     .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -VODDownload
 
 .NOTES
+    You need to run the following commands before first execution:
+      - twitch configure
+        and enter client_id and client_secret
+      - twitch token -u -s user:read:follows
     Having problems with downloading? Update the youtube-dl.exe first, there might already be a fix for that!
 #>
 

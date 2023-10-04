@@ -131,9 +131,9 @@ function Invoke-TwitchCLI {
     $QueryString = ''
     if ($Query.Count -ge 1) {
         $QueryString = '-q ' + ($Query -join ' -q ')
-        $ExecString =  $ExecString + ' ' + $QueryString   
+        $ExecString =  $ExecString + ' ' + $QueryString
     }
-    
+
     $response = Invoke-Expression $ExecString
     $jsonResponse = $response | ConvertFrom-Json
     if ($jsonResponse.status -eq '404') {

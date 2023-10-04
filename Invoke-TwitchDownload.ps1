@@ -78,10 +78,10 @@
     .\Invoke-TwitchDownload.ps1 -Identity 'Twitch' -VODDownload
 
 .EXAMPLE
-    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789'
+    .\Invoke-TwitchDownload.ps1 -IdentityID '123456789'
 
 .EXAMPLE
-    .\Invoke-TwitchDownload.ps1 -broadcaster_id '123456789' -VODDownload
+    .\Invoke-TwitchDownload.ps1 -IdentityID '123456789' -VODDownload
 
 .NOTES
     You need to run the following commands before first execution:

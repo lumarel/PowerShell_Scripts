@@ -150,6 +150,10 @@ if ($Subscription) {
     $jsonUserData = Invoke-TwitchCLI -TwitchCLIexe $TwitchCLIexe -Command 'get' -Template '/users'
     $IdentityID = $jsonUserData.data.id
 
+    if ($SelfDownload) {
+        $CreatorIdentityID = $IdentityID
+    }
+
     Write-Verbose -Message 'Searching for subscribed channels'
     $UserFollows = @()
     $UserFollowsPagination = ''

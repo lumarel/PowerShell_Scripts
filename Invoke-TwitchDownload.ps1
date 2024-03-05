@@ -118,6 +118,7 @@ param(
     [int]$DownloadTrials = 42,
     [int]$APITrials = 42
 )
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
 function Invoke-TwitchCLI {
     param(
         [Parameter(Mandatory)][string]$TwitchCLIexe,
